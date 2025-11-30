@@ -1,116 +1,107 @@
-# Intellisense-AI
-🚀 IntelliSense AI
 
-A modern FastAPI-based AI backend powered by uv, FastAPI, Python 3.11+, and clean project structure.
+# IntelliSense AI – Backend Setup Guide
 
-This document explains how to set up and run the project from scratch, even for someone opening the repo for the first time.
+This README explains how to set up and run the **IntelliSense AI backend** using **uv** for dependency management.
 
-📦 1. Clone the Project
+---
+
+## 🚀 Project Setup
+
+### 1. **Clone the Repository**
+```bash
 git clone https://github.com/chandankumar123456/intellisense-ai.git
 cd intellisense-ai
+```
 
-🐍 2. Install uv (if not installed)
+---
 
-uv is a super-fast Python package manager + virtual environment system.
+## 📦 Dependency Management with `uv`
 
-Install (recommended):
+This project uses **uv** for fast dependency installation and reproducible environments.
 
-pip install uv
+### 2. **Install Dependencies**
+Just run:
 
-
-Check version:
-
-uv --version
-
-🧩 3. Install Dependencies
-
-Inside the project root directory:
-
+```bash
 uv sync
+```
 
+`uv sync` will:
 
-This will:
+- Create a virtual environment (if missing)
+- Install dependencies listed in `requirements.txt`
+- Apply versions locked in `uv.lock`
+- Remove unused packages from the environment
+- Ensure your environment exactly matches the project lockfile
 
-Create a virtual environment at .venv
+That's all the user needs.
 
-Install all dependencies from pyproject.toml
+---
 
-Lock versions for reproducibility
+## ▶️ Running the Backend
 
-⚠️ Important Note
+Once dependencies are installed, run:
 
-Do NOT activate conda or any other environment.
-
-uv manages everything automatically.
-
-▶️ 4. Run the Application (Recommended)
-
-Use uv to run the FastAPI server correctly:
-
+```bash
 uv run uvicorn main:app --reload
+```
 
+or using Python directly:
 
-This ensures:
+```bash
+python -m uvicorn main:app --reload
+```
 
-Correct .venv is used
+---
 
-No Anaconda/conda conflicts
+## 📁 Project Structure
+```
+IntelliSense-AI/
+│── main.py
+│── requirements.txt
+│── uv.lock
+│── README.md
+└── ...
+```
 
-FastAPI + Pydantic v2 run smoothly
+---
 
-The server starts on:
+## 🔧 Adding New Packages
 
-http://127.0.0.1:8000
+To add a new package:
 
-📌 5. Project Structure
-IntelliSense AI/
-│
-├── main.py
-├── pyproject.toml
-├── uv.lock
-├── README.md
-└── app/
-    ├── routers/
-    ├── services/
-    ├── utils/
-    └── models/
-
-
-(If your structure changes, update here.)
-
-🧪 6. Testing the API
-
-Open your browser:
-
-http://127.0.0.1:8000/docs
-
-
-FastAPI automatically generates Swagger UI.
-
-🔄 7. Updating Dependencies
-
-If you want to install a new package:
-
+```bash
 uv add package-name
+```
 
+To add all packages inside `requirements.txt`:
 
-Example:
+```bash
+uv add -r requirements.txt
+```
 
-uv add fastapi
-uv add "openai>=1.0"
+After adding packages to the lockfile, update environment:
 
-🛠️ 8. Running Any Python Script
-
-To run any Python file inside the project:
-
-uv run python filename.py
-
-➕ 9. Removing and Rebuilding Environment
-
-If anything breaks:
-
-uv clean
+```bash
 uv sync
+```
 
+---
 
-This rebuilds a clean environment.
+## 👥 For Contributors
+
+Anyone cloning your repo only needs to run:
+
+```bash
+uv sync
+```
+
+No manual venv creation, no pip install commands.
+
+---
+
+## ❓ Need Help?
+
+Open an issue or ping the maintainer.
+
+---

@@ -1,3 +1,14 @@
 fastapi[standard]
 uvicorn
 pydantic
+agno
+openai
+groq
+langchain
+langgraph
+langsmith
+langchain-core
+langchain-community
+langchain-mcp-adapters
+langgraph-cli[inmem]
+starlette>=0.38.6,<0.60
