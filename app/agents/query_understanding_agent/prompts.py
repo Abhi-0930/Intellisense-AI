@@ -1,3 +1,4 @@
+# app/agents/query_understanding_agent/prompts.py
 from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 
 # Build the big human template using jinja2 (so braces won't break)

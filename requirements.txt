@@ -11,3 +11,5 @@ langchain-core
 langchain-community
 langchain-mcp-adapters
 starlette
+langchain-openai
+lanchain-groq

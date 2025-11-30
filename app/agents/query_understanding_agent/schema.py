@@ -1,6 +1,6 @@
 # app/agents/query_understanding_agent/schema.py
 from datetime import datetime
-from typing import List, Literal, Annotated
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class Preferences(BaseModel):
@@ -9,8 +9,8 @@ class Preferences(BaseModel):
     domain: str
 
 class QueryUnderstandingInput(BaseModel):
-    user_id: str
-    session_id: str
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
     query_text: str
     conversation_history: List[str] = Field(..., max_items=3)
     preferences: Preferences
