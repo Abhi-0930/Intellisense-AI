@@ -10,5 +10,4 @@ langsmith
 langchain-core
 langchain-community
 langchain-mcp-adapters
-langgraph-cli[inmem]
-starlette>=0.38.6,<0.60
+starlette

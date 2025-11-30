@@ -17,6 +17,6 @@ dependencies = [
     "langsmith>=0.4.49",
     "openai>=2.8.1",
     "pydantic>=2.12.5",
-    "starlette>=0.38.6,<0.60",
+    "starlette==0.41.2",
     "uvicorn>=0.38.0",
 ]
