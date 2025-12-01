@@ -13,3 +13,4 @@ langchain-mcp-adapters
 starlette
 langchain-openai
 langchain-groq
+pinecone
