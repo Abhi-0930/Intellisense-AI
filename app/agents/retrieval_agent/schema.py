@@ -21,7 +21,7 @@ class RetrievalInput(BaseModel):
     preferences: dict
     
 class Chunk(BaseModel):
-    chunk_id: str
+    chunk_id: Optional[str]
     document_id: str
     text: str
     source_type: Literal["pdf","web","youtube","note"]
