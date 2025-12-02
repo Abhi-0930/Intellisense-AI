@@ -10,7 +10,10 @@ from response_synthesizer_agent.schema import SynthesisInput, SynthesisOutput
 from .controller_config import (
     DEFAULT_RETRIEVERS,
     DEFAULT_MODEL_NAME,
-    DEFAULT_MAX_OUTPUT_TOKENS
+    DEFAULT_MAX_OUTPUT_TOKENS,
+    FALLBACK_INSUFFICIENT_CONTEXT,
+    FALLBACK_QUERY_UNDERSTANDING_FAILURE,
+    FALLBACK_SYNTHESIZER_FAILURE
 )
 
 
@@ -27,7 +30,7 @@ class PipelineControllerAgent:
         load_dotenv()
         self.query_understander = query_understander
         self.retriever_orchestrator = retriever_orchestrator
-        self.response_synthesize = response_synthesizer
+        self.response_synthesizer = response_synthesizer
         
         self.default_retrievers = DEFAULT_RETRIEVERS
         self.default_model = DEFAULT_MODEL_NAME
@@ -51,7 +54,7 @@ class PipelineControllerAgent:
         # Query Understanding Agent 
         try:
             self.query_understanding_input = QueryUnderstandingInput(
-                query = query,
+                query_text = query,
                 user_id= user_id,
                 session_id=session_id,
                 preferences=preferences,
@@ -60,14 +63,18 @@ class PipelineControllerAgent:
             )
             self.query_understanding_output: QueryUnderstandingOutput = await self.query_understander.run(self.query_understanding_input)
         except Exception as e:
+            from query_understanding_agent.schema import RetrievalParams
+            from query_understanding_agent.schema import StylePreferences
+            retrieval_params = RetrievalParams()
+            style_prefs = StylePreferences(type="concise", tone="neutral")
             # fallback to safe defaults
             warnings.append(f"QueryUnderstanding failed: {e}")
             self.query_understanding_output = QueryUnderstandingOutput(
-                intent="unknown",
+                intent="none",
                 rewritten_query=query,
                 retrievers_to_use=self.default_retrievers,
-                retrieval_params={},
-                style_preferences={}
+                retrieval_params=retrieval_params,
+                style_preferences= style_prefs
             )
             
             trace["query_understanding"] = {
@@ -93,12 +100,12 @@ class PipelineControllerAgent:
         except Exception as e:
             warnings.append(f"Retrieval failed: {e}")
             # Fallback: empty retrieval output structure
-            retrieval_output = RetrievalOutput(
+            self.retrieval_agent_output = RetrievalOutput(
                 chunks=[],
                 retrieval_trace={},
                 trace_id=f"fallback-{int(time.time() * 1000)}",
             )
-        trace["retrieval_trace"] = getattr(retrieval_output, "retrieval_trace", {})
+        trace["retrieval_trace"] = self.retrieval_agent_output.retrieval_trace
         
         # Synthesizer Agent
         try:
@@ -111,46 +118,45 @@ class PipelineControllerAgent:
                 preferences=preferences,
                 model_name=model_name,
                 max_output_tokens=preferences.get("max_tokens", self.default_max_tokens),
-                retrieved_chunks=self.response_synthesizer_agent_output.chunks
+                retrieved_chunks=self.retrieval_agent_output.chunks
             )
             
-            self.response_synthesizer_agent_output: SynthesisOutput = await self.response_synthesize.run(self.response_synthesizer_agent_input)
+            self.response_synthesizer_agent_output: SynthesisOutput = await self.response_synthesizer.run(self.response_synthesizer_agent_input)
         except Exception as e:
             warnings.append(f"Synthesizer failed: {e}")
-            synthesis_output = SynthesisOutput(
-                answer="Sorry, I couldn't generate a response right now.",
-                citations=[],
-                warnings=[str(e)],
-                confidence=0.0,
-                raw_model_output=None,
+            self.response_synthesizer_agent_output = SynthesisOutput(
+                answer=FALLBACK_SYNTHESIZER_FAILURE,
                 used_chunk_ids=[],
+                trace_id=self.retrieval_agent_output.trace_id,
+                confidence=0.0,
+                warnings=[str(e)],
+                raw_model_output=None,
                 reasoning=None,
                 metrics={},
             )
 
-        # Handle INSFFICIENT_CONTEXT sentinel if your synthesizer uses that
-        if getattr(synthesis_output, "answer", None) == "INSUFFICIENT_CONTEXT":
-            warnings.append("Synthesizer reported INSUFFICIENT_CONTEXT. Returning fallback answer.")
-            fallback_answer = "I don't have enough information to answer that question right now. " \
-                              "Try giving more context or allow retrieval of external sources."
-            synthesis_output.answer = fallback_answer
-            synthesis_output.confidence = 0.0
+        if self.response_synthesizer_agent_output.answer == "INSUFFICIENT_CONTEXT":
+            warnings.append("Synthesizer reported INSUFFICIENT_CONTEXT.")
+            self.response_synthesizer_agent_output.answer = FALLBACK_INSUFFICIENT_CONTEXT
+            self.response_synthesizer_agent_output.confidence = 0.0
 
-
+        # ==================================================================
+        # FINAL PACKAGE
+        # ==================================================================
         latency_ms = int((time.time() - start_time) * 1000)
 
         final_payload = {
-            "answer": synthesis_output.answer,
-            "confidence": getattr(synthesis_output, "confidence", 0.0),
-            "warnings": warnings + getattr(synthesis_output, "warnings", []),
-            "citations": getattr(synthesis_output, "citations", []),
-            "used_chunk_ids": getattr(synthesis_output, "used_chunk_ids", getattr(synthesis_output, "used_chunk_ids", [])),
-            "retrieval_trace": trace.get("retrieval_trace", {}),
-            "query_understanding": trace.get("query_understanding", {}),
-            "trace_id": getattr(retrieval_output, "trace_id", None),
+            "answer": self.response_synthesizer_agent_output.answer,
+            "confidence": self.response_synthesizer_agent_output.confidence,
+            "warnings": warnings + self.response_synthesizer_agent_output.warnings,
+            # FIX: your model uses used_chunk_ids, not citations
+            "used_chunk_ids": self.response_synthesizer_agent_output.used_chunk_ids,
+            "retrieval_trace": trace["retrieval_trace"],
+            "query_understanding": trace["query_understanding"],
+            "trace_id": self.response_synthesizer_agent_output.trace_id,
             "latency_ms": latency_ms,
-            "raw_model_output": getattr(synthesis_output, "raw_model_output", None),
-            "metrics": getattr(synthesis_output, "metrics", {}),
+            "raw_model_output": self.response_synthesizer_agent_output.raw_model_output,
+            "metrics": self.response_synthesizer_agent_output.metrics,
         }
 
-        return final_payload # final output
+        return final_payload
