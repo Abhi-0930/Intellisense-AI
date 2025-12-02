@@ -219,3 +219,4 @@ images
 analyzer_agent
 generator_agent
 reranker_agent
+app/agents/response_synthesizer_agent/test/
