@@ -103,7 +103,7 @@ records = [
 #     })
 
 # # Upload to Pinecone
-# index = pc.Index(index_name)
+index = pc.Index(index_name)
 # index.upsert_records(namespace, clean_records)
 
 # # print(index.describe_index_stats())

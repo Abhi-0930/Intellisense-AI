@@ -1,8 +1,8 @@
 # app/agents/retrieval_agent/orchestrator.py
 
-from .schema import Chunk, RetrievalInput, RetrievalOutput, RetrievalParams
-from .vector_retriever import VectorRetriever
-from .keyword_retriever import KeywordRetriever
+from app.agents.retrieval_agent.schema import Chunk, RetrievalInput, RetrievalOutput, RetrievalParams
+from app.agents.retrieval_agent.vector_retriever import VectorRetriever
+from app.agents.retrieval_agent.keyword_retriever import KeywordRetriever
 from typing import List
 from uuid import uuid4
 class RetrievalOrchestratorAgent:

@@ -1,7 +1,7 @@
 # app/agents/retrieval_agent/keyword_retriever.py
 
 from typing import List
-from schema import Chunk
+from app.agents.retrieval_agent.schema import Chunk
 import json
 import os
 import re
@@ -18,7 +18,7 @@ def tokenize(text: str) -> List[str]:
 
 
 class KeywordRetriever:
-    def __init__(self, keyword_index_path: str):
+    def __init__(self, keyword_index_path: str = "keyword_index.json"):
         if not os.path.exists(keyword_index_path):
             raise FileNotFoundError(f"Keyword Index not found at: {keyword_index_path}")
 
