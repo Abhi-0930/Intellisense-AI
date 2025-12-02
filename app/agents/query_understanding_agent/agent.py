@@ -1,8 +1,8 @@
 # app/agents/query_understanding_agent/agent.py
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
-from schema import QueryUnderstandingInput, QueryUnderstandingOutput
-from prompts import prompt_template
+from app.agents.query_understanding_agent.schema import QueryUnderstandingInput, QueryUnderstandingOutput
+from app.agents.query_understanding_agent.prompts import prompt_template
 import json
 load_dotenv()
 class QueryUnderstandingAgent:
