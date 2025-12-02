@@ -2,14 +2,9 @@
 
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
+from app.agents.retrieval_agent.schema import Chunk
 
-class Chunk(BaseModel):
-    chunk_id: str
-    text: str
-    source_url: Optional[str] = None
-    source_type: Optional[str] = None
-    score: float
-    metadata: Dict[str, Any] = {}
+
 
 
 class SynthesisInput(BaseModel):

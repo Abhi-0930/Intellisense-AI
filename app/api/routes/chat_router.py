@@ -1,0 +1,119 @@
+# app/api/routes/chat_router.py
+from fastapi import APIRouter, Depends
+
+from app.agents.pipeline_controller_agent.controller import PipelineControllerAgent
+from app.agents.query_understanding_agent.agent import QueryUnderstandingAgent
+from app.agents.retrieval_agent.orchestrator import RetrievalOrchestratorAgent
+from app.agents.response_synthesizer_agent.synthesizer import ResponseSynthesizer
+from app.agents.response_synthesizer_agent.utils import estimate_tokens
+from app.agents.response_synthesizer_agent.prompts import SYSTEM_PROMPT, INSTRUCTION_PROMPT
+from app.agents.response_synthesizer_agent.model_config import ModelConfig
+
+from app.agents.retrieval_agent.keyword_retriever import KeywordRetriever
+from app.agents.retrieval_agent.vector_retriever import VectorRetriever
+from app.agents.retrieval_agent.utils import index
+
+from dotenv import load_dotenv
+
+from langchain_groq import ChatGroq
+
+from app.api.schemas.chat_request import ChatRequest
+from app.api.schemas.chat_response import ChatResponse
+
+import time
+
+router = APIRouter(prefix="/v1/chat",
+                   tags=["chat (Notebook LM)"]
+                   )
+
+pipeline_controller: PipelineControllerAgent = None
+
+def get_pipeline_controller() -> PipelineControllerAgent:
+    global pipeline_controller
+
+    if pipeline_controller is None:
+        load_dotenv()
+
+        vector_client = VectorRetriever(index)
+        keyword_client = KeywordRetriever("app/agents/retrieval_agent/keyword_index.json")
+        llm_client = ChatGroq(model="llama-3.1-8b-instant")
+
+        q_agent = QueryUnderstandingAgent(llm_client)
+        retrieval_agent = RetrievalOrchestratorAgent(
+            vector_retriever=vector_client,
+            keyword_retriever=keyword_client
+        )
+        model_config = ModelConfig(
+            model_name="llama-3.1-8b-instant",
+            max_context_tokens=128000      # adjust to model's limit
+        )
+
+        prompts = {
+            "system": SYSTEM_PROMPT,
+            "instruction": INSTRUCTION_PROMPT
+        }
+
+        res_agent = ResponseSynthesizer(
+            llm_client=llm_client,
+            token_estimator=estimate_tokens,
+            prompts=prompts,
+            model_config=model_config
+        )
+
+        pipeline_controller = PipelineControllerAgent(
+            q_agent,
+            retrieval_agent,
+            res_agent
+        )
+
+    return pipeline_controller
+
+@router.post("/query")
+async def chat_query(request: ChatRequest, 
+                     controller: PipelineControllerAgent = Depends(get_pipeline_controller)
+                    ) -> ChatResponse:
+    try:
+            
+        response = await controller.run(
+            query= request.query,
+            user_id = request.user_id,
+            session_id= request.session_id,
+            preferences= request.preferences,
+            conversation_history= request.conversation_history,
+            allow_agentic=request.allow_agentic,
+            model_name=request.model_name
+        )
+        
+        return ChatResponse(
+            answer = response.get("answer"),
+            confidence=response.get("confidence"),
+            warnings= response.get("warnings"),
+            used_chunk_ids= response.get("used_chunk_ids"),
+            retrieval_trace=response.get("retrieval_trace"),
+            query_understanding=response.get("query_understanding"),
+            trace_id=response.get("trace_id"),
+            latency_ms=response.get("latency_ms"),
+            raw_model_output=response.get("raw_model_output"),
+            metrics=response.get("metrics"),
+            citations = []
+        )
+        
+    except Exception as e:
+        fallback_answer = (
+            "Sorry, something went wrong while processing your request. "
+            "Please try again."
+        )
+
+        return ChatResponse(
+            answer=fallback_answer,
+            confidence=0.0,
+            warnings=["controller_failed", str(e)],
+            used_chunk_ids=[],
+            retrieval_trace={},
+            query_understanding={},
+            trace_id=f"fallback-{int(time.time()*1000)}",
+            latency_ms=0,
+            raw_model_output=None,
+            metrics={},
+            citations=[]
+        )

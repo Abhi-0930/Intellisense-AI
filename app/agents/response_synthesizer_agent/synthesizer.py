@@ -7,10 +7,11 @@ from langchain_groq import ChatGroq
 from app.agents.response_synthesizer_agent.schema import SynthesisInput, SynthesisOutput
 from app.agents.response_synthesizer_agent.utils import estimate_tokens, sentence_tokenize, clean_text, token_overlap
 from app.agents.response_synthesizer_agent.prompts import SYSTEM_PROMPT, INSTRUCTION_PROMPT
+from langchain.messages import HumanMessage, SystemMessage
 
 class ResponseSynthesizer:
     def __init__(self, llm_client: ChatGroq, token_estimator, prompts, model_config):
-        self.llm_clinet = llm_client
+        self.llm_client = llm_client
         self.token_estimator = token_estimator
         self.prompts = prompts
         self.model_config = model_config
@@ -221,15 +222,39 @@ class ResponseSynthesizer:
     # LLM CALL
     # ---------------------------------------------------------
     async def call_llm(self, prompt, max_tokens, model_name):
-        result = await self.llm_client.apredict(
-            prompt=prompt,
-            max_tokens=max_tokens,
+        """
+        Correct async call for ChatGroq chat models using LangChain message format.
+        """
+
+        # Build messages list
+        messages = [
+            SystemMessage(content="You are a helpful AI assistant."),
+            HumanMessage(content=prompt)
+        ]
+
+        # Create temporary model instance with correct configuration
+        llm = ChatGroq(
             model=model_name,
             temperature=0.0,
+            max_tokens=max_tokens,
         )
-        # token usage from provider (if available)
-        token_usage = {"tokens": len(prompt.split()) + len(result.split())}
-        return result, token_usage
+
+        # Actual model call
+        result = await llm.ainvoke(messages)
+
+        # Extract text
+        if hasattr(result, "content"):
+            text = result.content
+        else:
+            text = str(result)
+
+        # Token usage approximation
+        token_usage = {
+            "tokens": len(prompt.split()) + len(text.split())
+        }
+
+        return text, token_usage
+
 
     # ---------------------------------------------------------
     # POSTPROCESSING / FACT CHECKING

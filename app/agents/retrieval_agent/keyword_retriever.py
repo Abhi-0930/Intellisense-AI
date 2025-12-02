@@ -18,7 +18,7 @@ def tokenize(text: str) -> List[str]:
 
 
 class KeywordRetriever:
-    def __init__(self, keyword_index_path: str = "keyword_index.json"):
+    def __init__(self, keyword_index_path: str = "app/agents/retrieval_agent/keyword_index.json"):
         if not os.path.exists(keyword_index_path):
             raise FileNotFoundError(f"Keyword Index not found at: {keyword_index_path}")
 

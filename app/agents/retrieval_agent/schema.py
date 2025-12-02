@@ -31,6 +31,10 @@ class Chunk(BaseModel):
     metadata: Optional[dict] = None
     raw_score: float              
     normalized_score: float = 0.0
+    
+    @property
+    def score(self):
+        return self.normalized_score
 
 class RetrievalOutput(BaseModel):
     chunks: List[Chunk]                

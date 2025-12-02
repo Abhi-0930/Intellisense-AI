@@ -14,8 +14,8 @@ are defined here
 from typing import List, Dict
 
 DEFAULT_RETRIEVERS: List[str] = [
-    "pinecone",
-    "faiss",
+    "vector",
+    "keyword",
 ]
 
 DEFAULT_MODEL_NAME: str = "llama-3.1-8b-instant"

@@ -14,7 +14,7 @@ class RetrievalOrchestratorAgent:
         print(f"Keyword retriever: {keyword_retriever}") 
         
     def create_trace(self):
-        return uuid4() # it returns the trace_id for RetrievalOutput
+        return str(uuid4()) # it returns the trace_id for RetrievalOutput
         
     async def run(self, input: RetrievalInput) -> RetrievalOutput:
         
