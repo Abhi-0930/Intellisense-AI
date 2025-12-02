@@ -215,6 +215,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+images
 analyzer_agent
 generator_agent
 reranker_agent

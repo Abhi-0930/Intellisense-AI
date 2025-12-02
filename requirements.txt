@@ -14,3 +14,4 @@ starlette
 langchain-openai
 langchain-groq
 pinecone
+rank-bm25
