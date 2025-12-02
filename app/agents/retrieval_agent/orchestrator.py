@@ -16,7 +16,7 @@ class RetrievalOrchestratorAgent:
     def create_trace(self):
         return uuid4() # it returns the trace_id for RetrievalOutput
         
-    async def run(self, input: RetrievalInput):
+    async def run(self, input: RetrievalInput) -> RetrievalOutput:
         
         self.vector_chunks = []
         self.keyword_chunks = []

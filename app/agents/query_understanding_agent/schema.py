@@ -14,7 +14,7 @@ class QueryUnderstandingInput(BaseModel):
     query_text: str
     conversation_history: List[str] = Field(..., max_items=3)
     preferences: Preferences
-    timestamp: datetime
+    timestamp: Optional[datetime] = None
     
 class RetrievalParams(BaseModel):
     top_k_vector: int
