@@ -1,0 +1,162 @@
+[
+    {
+        "chunk_id": "rec1",
+        "document_id": "rec1",
+        "text": "The Eiffel Tower was completed in 1889 and stands in Paris, France.",
+        "source_type": "note",
+        "source_url": "https://example.com/source1",
+        "metadata": {"category": "history"}
+    },
+    {
+        "chunk_id": "rec2",
+        "document_id": "rec2",
+        "text": "The Statue of Liberty was a gift from France to the United States and is located in New York Harbor.",
+        "source_type": "note",
+        "source_url": "https://example.com/source2",
+        "metadata": {"category": "history"}
+    },
+    {
+        "chunk_id": "rec3",
+        "document_id": "rec3",
+        "text": "Albert Einstein developed the theory of relativity, one of the cornerstones of modern physics.",
+        "source_type": "note",
+        "source_url": "https://example.com/source3",
+        "metadata": {"category": "science"}
+    },
+    {
+        "chunk_id": "rec4",
+        "document_id": "rec4",
+        "text": "Python is a high-level programming language widely used in machine learning and data science.",
+        "source_type": "note",
+        "source_url": "https://example.com/source4",
+        "metadata": {"category": "technology"}
+    },
+    {
+        "chunk_id": "rec5",
+        "document_id": "rec5",
+        "text": "Mount Everest is the highest mountain in the world, located in the Himalayas.",
+        "source_type": "note",
+        "source_url": "https://example.com/source5",
+        "metadata": {"category": "geography"}
+    },
+    {
+        "chunk_id": "rec6",
+        "document_id": "rec6",
+        "text": "The Great Wall of China was built over centuries to protect ancient China from invasions.",
+        "source_type": "note",
+        "source_url": "https://example.com/source6",
+        "metadata": {"category": "history"}
+    },
+    {
+        "chunk_id": "rec7",
+        "document_id": "rec7",
+        "text": "Photosynthesis is the process by which green plants convert sunlight into chemical energy.",
+        "source_type": "note",
+        "source_url": "https://example.com/source7",
+        "metadata": {"category": "biology"}
+    },
+    {
+        "chunk_id": "rec8",
+        "document_id": "rec8",
+        "text": "The capital city of Japan is Tokyo, known for its advanced technology and vibrant culture.",
+        "source_type": "note",
+        "source_url": "https://example.com/source8",
+        "metadata": {"category": "geography"}
+    },
+    {
+        "chunk_id": "rec9",
+        "document_id": "rec9",
+        "text": "Black holes are regions of spacetime where gravity is so strong that nothing can escape.",
+        "source_type": "note",
+        "source_url": "https://example.com/source9",
+        "metadata": {"category": "science"}
+    },
+    {
+        "chunk_id": "rec10",
+        "document_id": "rec10",
+        "text": "Newton's three laws of motion describe the relationship between force and motion.",
+        "source_type": "note",
+        "source_url": "https://example.com/source10",
+        "metadata": {"category": "physics"}
+    },
+    {
+        "chunk_id": "rec11",
+        "document_id": "rec11",
+        "text": "The Mona Lisa is a famous painting created by Leonardo da Vinci during the Renaissance.",
+        "source_type": "note",
+        "source_url": "https://example.com/source11",
+        "metadata": {"category": "art"}
+    },
+    {
+        "chunk_id": "rec12",
+        "document_id": "rec12",
+        "text": "The Amazon rainforest produces around 20 percent of the world's oxygen and hosts diverse wildlife.",
+        "source_type": "note",
+        "source_url": "https://example.com/source12",
+        "metadata": {"category": "environment"}
+    },
+    {
+        "chunk_id": "rec13",
+        "document_id": "rec13",
+        "text": "Machine learning allows computers to improve their performance by learning from data.",
+        "source_type": "note",
+        "source_url": "https://example.com/source13",
+        "metadata": {"category": "technology"}
+    },
+    {
+        "chunk_id": "rec14",
+        "document_id": "rec14",
+        "text": "Shakespeare wrote many famous plays, including Hamlet, Macbeth, and Romeo and Juliet.",
+        "source_type": "note",
+        "source_url": "https://example.com/source14",
+        "metadata": {"category": "literature"}
+    },
+    {
+        "chunk_id": "rec15",
+        "document_id": "rec15",
+        "text": "The Pacific Ocean is the largest and deepest ocean on Earth.",
+        "source_type": "note",
+        "source_url": "https://example.com/source15",
+        "metadata": {"category": "geography"}
+    },
+    {
+        "chunk_id": "rec16",
+        "document_id": "rec16",
+        "text": "The Pythagorean theorem describes the relationship between the sides of a right triangle.",
+        "source_type": "note",
+        "source_url": "https://example.com/source16",
+        "metadata": {"category": "mathematics"}
+    },
+    {
+        "chunk_id": "rec17",
+        "document_id": "rec17",
+        "text": "Coffee originated in Ethiopia and has become one of the most popular beverages in the world.",
+        "source_type": "note",
+        "source_url": "https://example.com/source17",
+        "metadata": {"category": "food"}
+    },
+    {
+        "chunk_id": "rec18",
+        "document_id": "rec18",
+        "text": "Artificial intelligence enables machines to perform tasks that typically require human intelligence.",
+        "source_type": "note",
+        "source_url": "https://example.com/source18",
+        "metadata": {"category": "technology"}
+    },
+    {
+        "chunk_id": "rec19",
+        "document_id": "rec19",
+        "text": "Democracy is a form of government in which citizens have the power to vote and influence decisions.",
+        "source_type": "note",
+        "source_url": "https://example.com/source19",
+        "metadata": {"category": "politics"}
+    },
+    {
+        "chunk_id": "rec20",
+        "document_id": "rec20",
+        "text": "The human brain contains billions of neurons that communicate through electrical signals.",
+        "source_type": "note",
+        "source_url": "https://example.com/source20",
+        "metadata": {"category": "biology"}
+    }
+]
