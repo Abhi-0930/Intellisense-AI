@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "agno>=2.3.4",
+    "bcrypt>=5.0.0",
     "fastapi[standard]>=0.122.0",
     "groq>=0.36.0",
     "langchain>=1.1.0",
@@ -20,8 +21,10 @@ dependencies = [
     "openai>=2.8.1",
     "pinecone>=8.0.0",
     "pydantic>=2.12.5",
+    "pyjwt>=2.10.1",
     "pytest>=9.0.1",
     "rank-bm25>=0.2.2",
+    "redis>=7.1.0",
     "starlette==0.41.2",
     "uvicorn>=0.38.0",
 ]

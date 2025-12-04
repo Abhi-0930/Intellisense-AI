@@ -15,3 +15,6 @@ langchain-openai
 langchain-groq
 pinecone
 rank-bm25
+redis
+pyjwt
+bcrypt

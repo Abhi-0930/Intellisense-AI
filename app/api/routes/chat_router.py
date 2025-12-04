@@ -1,5 +1,7 @@
 # app/api/routes/chat_router.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.core.redis_client import redis_client
 
 from app.agents.pipeline_controller_agent.controller import PipelineControllerAgent
 from app.agents.query_understanding_agent.agent import QueryUnderstandingAgent
@@ -21,6 +23,19 @@ from app.api.schemas.chat_request import ChatRequest
 from app.api.schemas.chat_response import ChatResponse
 
 import time
+
+def ensure_valid_session(user_id: str, session_id: str):
+    key = f"session:{session_id}"
+    
+    # session does not exists -> expired or wrong ID
+    if not redis_client.exists(key):
+        raise HTTPException(400, "Session not found or expired")
+    
+    stored_user_id = redis_client.hget(key, "user_id")
+    
+    # someone might pass a session belonging to another user
+    if stored_user_id != user_id:
+        raise HTTPException(400, "Session does not belong to this user")
 
 router = APIRouter(prefix="/v1/chat",
                    tags=["chat (Notebook LM)"]
@@ -73,7 +88,7 @@ async def chat_query(request: ChatRequest,
                      controller: PipelineControllerAgent = Depends(get_pipeline_controller)
                     ) -> ChatResponse:
     try:
-            
+        ensure_valid_session(request.user_id, request.session_id)
         response = await controller.run(
             query= request.query,
             user_id = request.user_id,

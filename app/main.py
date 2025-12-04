@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.chat_router import router as chat_router
-# from api.routes.chat_router import router as chat_router
+from app.api.routes.session import router as session_router
 from app.core.logging import log_info, log_error
 
 app = FastAPI(
@@ -26,6 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(chat_router)
+app.include_router(session_router)
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
@@ -70,7 +72,6 @@ async def logging_middleware(request: Request, call_next):
 
     return response
 
-app.include_router(chat_router)
 
 @app.get("/health")
 async def health():
