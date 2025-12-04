@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.chat_router import router as chat_router
 from app.api.routes.session import router as session_router
+from app.api.routes.auth_router import router as auth_router
+
 from app.core.logging import log_info, log_error
 
 app = FastAPI(
@@ -28,6 +30,7 @@ app.add_middleware(
 
 app.include_router(chat_router)
 app.include_router(session_router)
+app.include_router(auth_router)
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):

@@ -1,26 +1,29 @@
 # app/api/routes/chat_router.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 
 from app.core.redis_client import redis_client
 
 from app.agents.pipeline_controller_agent.controller import PipelineControllerAgent
 from app.agents.query_understanding_agent.agent import QueryUnderstandingAgent
-from app.agents.retrieval_agent.orchestrator import RetrievalOrchestratorAgent
+
 from app.agents.response_synthesizer_agent.synthesizer import ResponseSynthesizer
 from app.agents.response_synthesizer_agent.utils import estimate_tokens
 from app.agents.response_synthesizer_agent.prompts import SYSTEM_PROMPT, INSTRUCTION_PROMPT
 from app.agents.response_synthesizer_agent.model_config import ModelConfig
 
+from app.agents.retrieval_agent.orchestrator import RetrievalOrchestratorAgent
 from app.agents.retrieval_agent.keyword_retriever import KeywordRetriever
 from app.agents.retrieval_agent.vector_retriever import VectorRetriever
 from app.agents.retrieval_agent.utils import index
 
+from app.api.schemas.chat_request import ChatRequest
+from app.api.schemas.chat_response import ChatResponse
+
+from app.core.auth_utils import decode_jwt_token
+
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
-
-from app.api.schemas.chat_request import ChatRequest
-from app.api.schemas.chat_response import ChatResponse
 
 import time
 
@@ -85,9 +88,25 @@ def get_pipeline_controller() -> PipelineControllerAgent:
 
 @router.post("/query")
 async def chat_query(request: ChatRequest, 
+                     authorization: str = Header(None),
                      controller: PipelineControllerAgent = Depends(get_pipeline_controller)
                     ) -> ChatResponse:
     try:
+        
+        if not authorization:
+            raise HTTPException(401, "Missing auth token")
+        
+        token = authorization.replace("Bearer ", "")
+        decoded = decode_jwt_token(token)
+        
+        if not decoded:
+            raise HTTPException(401, "Invalid or expired token")
+        
+        authenticated_user_id = decoded["user_id"]
+        
+        if authenticated_user_id != request.user_id:
+            raise HTTPException(403, "Token does not match user")
+        
         ensure_valid_session(request.user_id, request.session_id)
         response = await controller.run(
             query= request.query,
