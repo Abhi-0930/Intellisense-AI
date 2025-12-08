@@ -285,7 +285,7 @@ package-lock.json
 /lib/
 
 
-
+.cursor
 images
 analyzer_agent
 generator_agent
