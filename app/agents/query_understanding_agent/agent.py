@@ -4,7 +4,21 @@ from dotenv import load_dotenv
 from app.agents.query_understanding_agent.schema import QueryUnderstandingInput, QueryUnderstandingOutput
 from app.agents.query_understanding_agent.prompts import prompt_template
 import json
-load_dotenv()
+
+# Load .env file with encoding fallback
+try:
+    load_dotenv()
+except UnicodeDecodeError:
+    # Try UTF-16 encoding (common on Windows)
+    try:
+        load_dotenv(encoding='utf-16')
+    except Exception:
+        # Try UTF-16 with BOM
+        try:
+            load_dotenv(encoding='utf-16-le')
+        except Exception:
+            # If all encodings fail, continue without .env file
+            pass
 class QueryUnderstandingAgent:
     def __init__(self, llm_client):
         self.llm_client = llm_client

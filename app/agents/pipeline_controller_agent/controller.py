@@ -40,7 +40,20 @@ class PipelineControllerAgent:
         retriever_orchestrator: RetrievalOrchestratorAgent,
         response_synthesizer: ResponseSynthesizer
     ):
-        load_dotenv()
+        # Load .env file with encoding fallback
+        try:
+            load_dotenv()
+        except UnicodeDecodeError:
+            # Try UTF-16 encoding (common on Windows)
+            try:
+                load_dotenv(encoding='utf-16')
+            except Exception:
+                # Try UTF-16 with BOM
+                try:
+                    load_dotenv(encoding='utf-16-le')
+                except Exception:
+                    # If all encodings fail, continue without .env file
+                    pass
         self.query_understander = query_understander
         self.retriever_orchestrator = retriever_orchestrator
         self.response_synthesizer = response_synthesizer

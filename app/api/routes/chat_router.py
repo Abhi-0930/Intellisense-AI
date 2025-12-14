@@ -51,7 +51,20 @@ def get_pipeline_controller() -> PipelineControllerAgent:
     global pipeline_controller
 
     if pipeline_controller is None:
-        load_dotenv()
+        # Load .env file with encoding fallback
+        try:
+            load_dotenv()
+        except UnicodeDecodeError:
+            # Try UTF-16 encoding (common on Windows)
+            try:
+                load_dotenv(encoding='utf-16')
+            except Exception:
+                # Try UTF-16 with BOM
+                try:
+                    load_dotenv(encoding='utf-16-le')
+                except Exception:
+                    # If all encodings fail, continue without .env file
+                    pass
 
         vector_client = VectorRetriever(index)
         keyword_client = KeywordRetriever("app/agents/retrieval_agent/keyword_index.json")

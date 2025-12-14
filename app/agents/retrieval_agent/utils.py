@@ -1,27 +1,81 @@
 # app/agents/retrieval_agent/utils.py
 from pinecone import Pinecone
 from dotenv import load_dotenv
+import os
 
-load_dotenv()
-
-pc = Pinecone()
+# Load .env file with encoding fallback
+try:
+    load_dotenv()
+except UnicodeDecodeError:
+    # Try UTF-16 encoding (common on Windows)
+    try:
+        load_dotenv(encoding='utf-16')
+    except Exception:
+        # Try UTF-16 with BOM
+        try:
+            load_dotenv(encoding='utf-16-le')
+        except Exception:
+            # If all encodings fail, continue without .env file
+            pass
 
 index_name = "intellisense-ai-dense-index"
 cloud = "aws"
 region = "us-east-1"
 namespace = "Intellisense-namespace"
 
-# Create index if missing
-if not pc.has_index(index_name):
-    pc.create_index_for_model(
-        name=index_name,
-        cloud=cloud,
-        region=region,
-        embed={
-            "model": "llama-text-embed-v2",
-            "field_map": {"text": "chunk_text"}  # chunk_text is the embedding field
-        }
-    )
+# Lazy initialization of Pinecone client and index
+_pc = None
+_index = None
+
+def _get_pinecone_client():
+    """Lazy initialization of Pinecone client"""
+    global _pc
+    if _pc is None:
+        api_key = os.getenv("PINECONE_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "PINECONE_API_KEY environment variable is not set. "
+                "Please set it in your .env file or environment variables."
+            )
+        _pc = Pinecone(api_key=api_key)
+    return _pc
+
+def _get_index():
+    """Lazy initialization of Pinecone index"""
+    global _index
+    if _index is None:
+        pc = _get_pinecone_client()
+        # Create index if missing
+        if not pc.has_index(index_name):
+            pc.create_index_for_model(
+                name=index_name,
+                cloud=cloud,
+                region=region,
+                embed={
+                    "model": "llama-text-embed-v2",
+                    "field_map": {"text": "chunk_text"}  # chunk_text is the embedding field
+                }
+            )
+        _index = pc.Index(index_name)
+    return _index
+
+# Create a module-level proxy that initializes the index lazily
+class _LazyIndex:
+    """Lazy proxy for Pinecone index that initializes on first access"""
+    def _ensure_initialized(self):
+        return _get_index()
+    
+    def __getattr__(self, name):
+        return getattr(self._ensure_initialized(), name)
+    
+    def __call__(self, *args, **kwargs):
+        return self._ensure_initialized()(*args, **kwargs)
+    
+    def search(self, *args, **kwargs):
+        return self._ensure_initialized().search(*args, **kwargs)
+
+# Export index as a lazy proxy
+index = _LazyIndex()
 
 # -----------------------------
 # ORIGINAL RECORDS
@@ -103,7 +157,7 @@ records = [
 #     })
 
 # # Upload to Pinecone
-index = pc.Index(index_name)
+# Note: index is now lazily initialized via _LazyIndex proxy above
 # index.upsert_records(namespace, clean_records)
 
 # # print(index.describe_index_stats())
