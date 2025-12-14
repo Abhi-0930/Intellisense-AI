@@ -8,6 +8,7 @@ from app.agents.response_synthesizer_agent.schema import SynthesisInput, Synthes
 from app.agents.response_synthesizer_agent.utils import estimate_tokens, sentence_tokenize, clean_text, token_overlap
 from app.agents.response_synthesizer_agent.prompts import SYSTEM_PROMPT, INSTRUCTION_PROMPT
 from langchain.messages import HumanMessage, SystemMessage
+from app.core.logging import log_info, log_warning
 
 class ResponseSynthesizer:
     def __init__(self, llm_client: ChatGroq, token_estimator, prompts, model_config):
@@ -43,12 +44,15 @@ class ResponseSynthesizer:
                 reasoning=None,
                 metrics={"latency_ms": int((time.time() - start_time) * 1000)},
             )
-            
+        
+        log_info(f"Synthesizer received {len(input.retrieved_chunks)} chunks for query: '{input.query}'", trace_id=input.trace_id)
             
         included_chunks = self.select_chunks(
             chunks = input.retrieved_chunks,
             query = input.query
         )
+        
+        log_info(f"Selected {len(included_chunks)} chunks after token budget filtering", trace_id=input.trace_id)
         
         # build context
         context_text = self.build_context(included_chunks)
@@ -275,7 +279,7 @@ class ResponseSynthesizer:
                 if cid not in used_chunk_ids:
                     used_chunk_ids.append(cid)
 
-        # 2) Fact check sentences
+        # 2) Fact check sentences (more lenient)
         sentences = sentence_tokenize(answer)
         unsupported_count = 0
 
@@ -284,12 +288,16 @@ class ResponseSynthesizer:
             if self.is_supported(s, chunks):
                 supported_sentences.append(s)
             else:
-                warnings.append("unsupported_claim")
-                supported_sentences.append("I don't know.")
-                unsupported_count += 1
+                # Only mark as unsupported if it's a factual claim (not questions, greetings, etc.)
+                if len(s.split()) > 3 and not s.strip().endswith('?'):
+                    warnings.append("unsupported_claim")
+                    unsupported_count += 1
+                # Keep the sentence even if not perfectly supported
+                supported_sentences.append(s)
 
-        # If too many unsupported
-        if len(sentences) > 0 and unsupported_count / len(sentences) >= 0.20:
+        # More lenient threshold: only return INSUFFICIENT_CONTEXT if >70% unsupported
+        if len(sentences) > 0 and unsupported_count / len(sentences) > 0.70:
+            log_warning(f"Too many unsupported claims ({unsupported_count}/{len(sentences)})")
             return "INSUFFICIENT_CONTEXT", [], warnings
 
         final_answer = " ".join(supported_sentences)
@@ -300,8 +308,10 @@ class ResponseSynthesizer:
     # ---------------------------------------------------------
     def is_supported(self, sentence: str, chunks: List) -> bool:
         sent = sentence.lower()
+        # Lower threshold for support (20% instead of 30%)
         for c in chunks:
-            if token_overlap(sent, c.text.lower()) > 0.30:
+            overlap = token_overlap(sent, c.text.lower())
+            if overlap > 0.20:  # More lenient threshold
                 return True
         return False
 

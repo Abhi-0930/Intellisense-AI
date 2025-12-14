@@ -110,8 +110,7 @@ class PipelineControllerAgent:
             }
 
         except Exception as e:
-            from app.agents.retrieval_agent.schema import RetrievalParams
-            from app.agents.query_understanding_agent.schema import StylePreferences
+            from app.agents.query_understanding_agent.schema import RetrievalParams, StylePreferences
 
             warnings.append(f"QueryUnderstanding failed: {e}")
 

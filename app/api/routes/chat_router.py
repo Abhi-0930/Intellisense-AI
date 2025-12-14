@@ -1,5 +1,5 @@
 # app/api/routes/chat_router.py
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.core.redis_client import redis_client
@@ -101,7 +101,9 @@ def get_pipeline_controller() -> PipelineControllerAgent:
     return pipeline_controller
 
 @router.post("/query")
-async def chat_query(request: ChatRequest, 
+async def chat_query(
+                     http_request: Request,
+                     request: ChatRequest, 
                      credentials: HTTPAuthorizationCredentials = Security(bearer_scheme),
                      controller: PipelineControllerAgent = Depends(get_pipeline_controller)
                     ) -> ChatResponse:
@@ -143,6 +145,14 @@ async def chat_query(request: ChatRequest,
         )
         
     except Exception as e:
+        from app.core.logging import log_error
+        import traceback
+        
+        # Log the full error with traceback
+        error_trace = traceback.format_exc()
+        trace_id = http_request.headers.get("X-Trace-ID", "none")
+        log_error(f"Chat query failed: {str(e)}\n{error_trace}", trace_id=trace_id)
+        
         fallback_answer = (
             "Sorry, something went wrong while processing your request. "
             "Please try again."

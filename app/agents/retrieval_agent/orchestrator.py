@@ -5,6 +5,7 @@ from app.agents.retrieval_agent.vector_retriever import VectorRetriever
 from app.agents.retrieval_agent.keyword_retriever import KeywordRetriever
 from typing import List
 from uuid import uuid4
+from app.core.logging import log_info, log_warning
 class RetrievalOrchestratorAgent:
     def __init__(self, vector_retriever: VectorRetriever, keyword_retriever: KeywordRetriever):
         self.vector_retriever = vector_retriever
@@ -40,7 +41,7 @@ class RetrievalOrchestratorAgent:
             self.retrieval_trace['results']['vector'] = {
                 "count": len(self.vector_chunks),
                 "top_k": input.retrieval_params.top_k_vector,
-                "status": "success"
+                "status": "success" if self.vector_chunks else "no_results"
             }
             
         if "keyword" in input.retrievers_to_use: 
@@ -52,13 +53,18 @@ class RetrievalOrchestratorAgent:
             self.retrieval_trace['results']['keyword'] = {
                 "count": len(self.keyword_chunks),
                 "top_k": input.retrieval_params.top_k_keyword,
-                "status": "success"
+                "status": "success" if self.keyword_chunks else "no_results"
             }
             
         merged = self.merge_chunks([self.keyword_chunks, self.vector_chunks])
         final_chunks = self.normalize_scores(merged)
         
         final_chunks.sort(key=lambda c: c.normalized_score, reverse=True)
+        
+        log_info(f"Retrieval complete: {len(self.vector_chunks)} vector + {len(self.keyword_chunks)} keyword = {len(final_chunks)} total chunks")
+        
+        if not final_chunks:
+            log_warning(f"No chunks retrieved for query: '{input.rewritten_query}'")
         
         retrieval_output = RetrievalOutput(
             chunks = final_chunks,
